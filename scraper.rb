@@ -8,31 +8,15 @@ require 'scraperwiki'
 require 'open-uri/cached'
 OpenURI::Cache.cache_path = '.cache'
 
-class MembersPage < Scraped::HTML
+class MemberPage < Scraped::HTML
   decorator Scraped::Response::Decorator::CleanUrls
 
-  field :members do
-    member_rows.map { |row| fragment(row => MemberRow).to_h }
-  end
-
-  private
-
-  def member_table
-    noko.css('div.itemFullText table')
-  end
-
-  def member_rows
-    member_table.xpath('.//tr[td]')
-  end
-end
-
-class MemberRow < Scraped::HTML
   field :name do
-    tds[1].css('span').first.text.tidy
+    noko.css('h2.itemTitle').text.tidy
   end
 
   field :image do
-    tds[0].css('img/@src').text
+    noko.css('.itemFullText img/@src').map(&:text).first
   end
 
   field :faction do
@@ -42,14 +26,24 @@ class MemberRow < Scraped::HTML
 
   private
 
-  def tds
-    noko.css('td')
-  end
-
   def faction_text
-    tds[1].css('span').last.text
+    noko.xpath('//h4[contains(.,"Groupe politique")]/following::ul[1]//li').text
   end
 end
 
-url = 'http://www.conseil-national.mc/index.php/les-elus/les-elus-de-la-legislature-2013-2018'
+class MembersPage < Scraped::HTML
+  decorator Scraped::Response::Decorator::CleanUrls
+
+  field :members do
+    member_items.map { |a| Scraped::Scraper.new(a.attr('href') => MemberPage).scraper.to_h }
+  end
+
+  private
+
+  def member_items
+    noko.css('#k2ModuleBox88 a.moduleItemTitle')
+  end
+end
+
+url = 'http://www.conseil-national.mc/index.php/la-presidence'
 Scraped::Scraper.new(url => MembersPage).store(:members, index: %i[name faction])
