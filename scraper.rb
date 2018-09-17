@@ -21,7 +21,7 @@ class MemberPage < Scraped::HTML
 
   field :faction do
     return 'Sans Etiquette' if faction_text.include? 'Sans Etiquette'
-    faction_text[/Membre du groupe politique (.*)/, 1].tidy
+    faction_text[/groupe politique (.*)/, 1].tidy
   end
 
   private
