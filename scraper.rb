@@ -27,7 +27,7 @@ class MemberPage < Scraped::HTML
   private
 
   def faction_text
-    noko.xpath('//h4[contains(.,"Groupe politique")]/following::ul[1]//li').text
+    noko.xpath('//*[contains(.,"du groupe politique")]').last.text
   end
 end
 
