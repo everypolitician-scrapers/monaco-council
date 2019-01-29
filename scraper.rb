@@ -21,7 +21,8 @@ class MemberPage < Scraped::HTML
 
   field :faction do
     return 'Sans Etiquette' if faction_text.include? 'Sans Etiquette'
-    faction_text[/groupe politique (.*)/, 1].tidy
+    # Guillaume ROSE has this without the trailing bracket!
+    faction_text[/groupe politique (.*)/, 1].tidy.sub(/\(Priorité Monaco$/, '(Priorité Monaco)')
   end
 
   private
